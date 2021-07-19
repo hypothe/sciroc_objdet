@@ -16,6 +16,24 @@
   is as well forwarded to the active "inner" AS.
 */
 
+/*
+	TODO 20-07-21
+
+	- generate the three action clients
+	- generate the three action servers nodes
+	- generate a State/ActionClientMode class that implicitly stores the information
+		on the correct action client to call depending on the mode of the goal received.
+		These include:
+		- goal_id
+		- a sendGoal function which will choose, based on the mode, the action client and
+			the callback functions (done, active, feedback)
+		- a status function which will return whether or not the goal has been achieved by the
+			inner action client (to be checked by the ObjDetInterface in the clock_Cllbck)
+		- the result the ODI will need to return, filled appropriately by the doneCBs and
+			obtained by the ODI with a getter.
+	- separate the definition and implementation of the ObjDetInterface
+*/
+
 class ObjDetInterfaceAction
 {
 public:

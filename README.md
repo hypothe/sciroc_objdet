@@ -10,7 +10,7 @@
 
 ```
 # goal
-int32 mode
+uint8 mode
 string[] expected_tags
 ---
 # result

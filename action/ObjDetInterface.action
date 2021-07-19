@@ -1,0 +1,10 @@
+# goal
+int32 mode
+string[] expected_tags
+---
+# result
+string[] found_tags
+bool match
+---
+# feedback
+string step

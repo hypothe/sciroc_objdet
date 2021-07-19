@@ -15,7 +15,7 @@ string[] expected_tags
 ---
 # result
 string[] found_tags
-bool asExpected
+bool match
 ---
 # feedback
 string step

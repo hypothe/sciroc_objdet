@@ -7,45 +7,49 @@ class ActionClientModeWrapper::wait_visitor : public boost::static_visitor<bool>
     bool operator()(OEAPtr c) const {  return c->waitForServer(wait_time); }
     bool operator()(OKAPtr c) const {  return c->waitForServer(wait_time); }
     bool operator()(OCAPtr c) const {  return c->waitForServer(wait_time); }
-/* TEST
-*/
+
   private:
     ros::Duration wait_time = ros::Duration(1.0);
 };
 
-/* TEST
 class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<>
 {
 	public:
 		send_goal_visitor(ActionClientModeWrapper &p) : parent(p){}
+		void operator()(NNNPtr c) const { return; }
 
-		void operator()(OEAPtr c)
+		void operator()(OEAPtr c) const
 		{
 			sciroc_objdet::ObjectEnumerationGoal goal;
-			auto doneCB = [this](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectEnumerationResultConstPtr &result)
+			auto doneCB =
+			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectEnumerationResultConstPtr &result)
 			{
 				parent.state_ = state.state_;
 				parent.n_found_tags = result->n_found_tags;
 			};
-			c->sendGoal(goal, boost::bind(doneCB, this, std::placeholders::_1, std::placeholders::_2), OEA::SimpleActiveCallback(), OEA::SimpleFeedbackCallback());
+			c->sendGoal(goal, doneCB, OEA::SimpleActiveCallback(), OEA::SimpleFeedbackCallback());
 		}
-		void operator()(NNNPtr c) { return; }
 
-		void operator()(std::shared_ptr<OKA> c)
+		void operator()(OKAPtr c) const
 		{
 			sciroc_objdet::ObjectClassificationGoal goal;
-			auto doneCB = [this](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectClassificationResultConstPtr &result)
+			
+			auto doneCB =
+			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectClassificationResultConstPtr &result)
 			{
 				parent.state_ = state.state_;
 				parent.found_tags_ = result->found_tags;
 			};
-			c->sendGoal(goal, boost::bind(doneCB, this, std::placeholders::_1, std::placeholders::_2), OKA::SimpleActiveCallback(), OKA::SimpleFeedbackCallback());
+			c->sendGoal(goal, doneCB, OKA::SimpleActiveCallback(), OKA::SimpleFeedbackCallback());
 		}
 
-		void operator()(std::shared_ptr<OCA> c)
+		void operator()(OCAPtr c) const
 		{
 			sciroc_objdet::ObjectComparisonGoal goal;
-			auto doneCB = [this](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectComparisonResultConstPtr &result)
+			goal.expected_tags = parent.expected_tags_;
+
+			auto doneCB =
+			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectComparisonResultConstPtr &result)
 			{
 				parent.state_ = state.state_;
 				parent.found_tags_ = result->found_tags;
@@ -55,11 +59,12 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 																			parent.expected_tags_.begin(), parent.expected_tags_.end());
 				parent.expected_tags_.clear();
 			};
-			c->sendGoal(goal, boost::bind(doneCB, this, std::placeholders::_1, std::placeholders::_2), OCA::SimpleActiveCallback(), OCA::SimpleFeedbackCallback());
+			c->sendGoal(goal, doneCB, OCA::SimpleActiveCallback(), OCA::SimpleFeedbackCallback());
 		}
 	private:
 		ActionClientModeWrapper& parent;
 };
+/* TEST
 */
 
 ActionClientModeWrapper::ActionClientModeWrapper()
@@ -68,10 +73,10 @@ ActionClientModeWrapper::ActionClientModeWrapper()
   comp_ac_(std::make_shared<OCA>("object_comparison"))
 {
 	ac_.insert(std::pair<Mode, OXAPtr>(Mode::ENUMERATE, enum_ac_));
+  ac_.insert(std::pair<Mode, OXAPtr>(Mode::NONE, nullptr));
+  ac_.insert(std::pair<Mode, OXAPtr>(Mode::CLASSIFY, clas_ac_));
+  ac_.insert(std::pair<Mode, OXAPtr>(Mode::COMPARE, comp_ac_));
   /*
-  ac_.insert(std::pair<Mode, std::shared_ptr<OXAPtr> >(Mode::NONE, nullptr));
-  ac_.insert(std::pair<Mode, std::shared_ptr<OXA> >(Mode::CLASSIFY, std::make_shared<OXA>(clas_ac_)));
-  ac_.insert(std::pair<Mode, std::shared_ptr<OXA> >(Mode::COMPARE, std::make_shared<OXA>(comp_ac_)));
 	*/
 }
 

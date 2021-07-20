@@ -50,9 +50,9 @@ class ActionClientModeWrapper : public ObjDetMode
 		actionlib::SimpleClientGoalState::StateEnum state_;
 
 		class wait_visitor;
-		/* TEST
 		class send_goal_visitor;
-		**
+		/* TEST
+		*/
 		/*template <class T>
 		void doneCB(const actionlib::SimpleClientGoalState &state, const T &result);
 		*/

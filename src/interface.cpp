@@ -70,7 +70,6 @@ public:
     int mode = goal->mode;
     std::cout << mode << std::endl;
     std::vector<std::string> exp_tags = goal->expected_tags;
-    //boost::array<std::string, 3> exp_tags = goal->expected_tags;
 
     info << "\t<" << mode << ">\n";
     for (auto tag:exp_tags){  info << "\t- " << tag << "\n";  }
@@ -78,6 +77,15 @@ public:
     ROS_DEBUG("%s: New goal received\n%s", action_name_.c_str(), info.str().c_str());
 
     /*  Here select which of the "inner" action server to call and prepare the message  */
+
+    /*  TODO
+      Change the switch case to an if cascade, where the mode is chacked with ActionClientModeWrapper::Mode::ENUMERATE etc.
+      and then the ACMW mode is set accordingly (with the foos inherited by ObjDetMode)
+
+      After that call the waitForServer on that ACMW.
+    
+      */
+
     switch (mode)
     {
       case 0:

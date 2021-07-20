@@ -1,7 +1,5 @@
 #include "sciroc_objdet/ObjDetMode.h"
 
-//ObjDetMode::ObjDetMode() 						{ mode_ = Mode::NONE; 			}
-
 void ObjDetMode::setModeNone()      { mode_ = Mode::NONE;       }
 void ObjDetMode::setModeEnumerate() { mode_ = Mode::ENUMERATE;  }
 void ObjDetMode::setModeClassify()  { mode_ = Mode::CLASSIFY;   }

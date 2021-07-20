@@ -99,11 +99,11 @@ void ActionClientModeWrapper::sendGoal()
 	found_tags_.clear(); //cleanup
 	match_ = false;
 	n_found_tags = 0;
-/* TEST
+
 	ActionClientModeWrapper::send_goal_visitor sgv = ActionClientModeWrapper::send_goal_visitor(*this);
 
 	boost::apply_visitor(sgv, ac_[mode_]);
-*/
+
 }
 
 actionlib::SimpleClientGoalState::StateEnum ActionClientModeWrapper::getState() { return state_; }

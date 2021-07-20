@@ -18,8 +18,6 @@ class ObjDetMode
     bool isModeClassify();
     bool isModeCompare();
 
-  protected:
-
     enum class Mode
     {
       NONE = -1,
@@ -27,6 +25,9 @@ class ObjDetMode
       CLASSIFY,
       COMPARE
     };
+    
+  protected:
+
     Mode mode_;
 };
 

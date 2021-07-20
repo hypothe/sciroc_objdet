@@ -14,7 +14,8 @@
 class ActionClientModeWrapper : public ObjDetMode
 {
   public:
-		ActionClientModeWrapper(); // wait for servers
+		ActionClientModeWrapper();
+		
 		void waitForServer();
 
 		void setExpectedTags(std::vector<std::string>);
@@ -51,28 +52,8 @@ class ActionClientModeWrapper : public ObjDetMode
 
 		class wait_visitor;
 		class send_goal_visitor;
-		/* TEST
-		*/
-		/*template <class T>
-		void doneCB(const actionlib::SimpleClientGoalState &state, const T &result);
-		*/
+
 };
 
-/*
-template <class T>
-void ActionClientModeWrapper::doneCB(const actionlib::SimpleClientGoalState &state, const T &result)
-{
-	state_ = state.state_;
-
-	if (state != actionlib::SimpleClientGoalState::SUCCEEDED)
-	{
-		found_tags_.clear();
-		return;
-	}
-
-	found_tags_ = result->found_tags;
-	expected_tags_.clear();
-}
-*/
 
 #endif

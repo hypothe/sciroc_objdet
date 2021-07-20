@@ -1,17 +1,18 @@
 {
-  "configurations": [
-    {
-      "browse": {
-        "databaseFilename": "",
-        "limitSymbolsToIncludedHeaders": true
-      },
-      "includePath": [
-        "/opt/ros/melodic/include/**",
-        "/usr/include/**",
-        "/root/ros_ws/devel/include/**"
-      ],
-      "name": "ROS"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/opt/ros/melodic/include/**",
+                "/usr/include/**",
+                "/root/ros_ws/devel/include/**"
+            ],
+            "name": "ROS",
+            "cppStandard": "c++11"
+        }
+    ],
+    "version": 4
 }

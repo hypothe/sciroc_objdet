@@ -19,7 +19,9 @@ class ActionClientModeWrapper : public ObjDetMode
 
 		void setExpectedTags(std::vector<std::string>);
 		void sendGoal();
-		actionlib::SimpleClientGoalState getState();
+		actionlib::SimpleClientGoalState::StateEnum getState();
+
+		int getNumTags();
 		std::vector<std::string> getFoundTags();
 		bool getMatch();
 
@@ -36,10 +38,36 @@ class ActionClientModeWrapper : public ObjDetMode
 		OCA comp_ac_;
 
 		std::vector<std::string> expected_tags_, found_tags_;
+		bool match_;
+		int n_found_tags;
 
 		std::map<Mode,std::shared_ptr<OXA> > ac_;
 
+		actionlib::SimpleClientGoalState::StateEnum state_;
+
 		class wait_visitor;
+		class send_goal_visitor;
+
+		/*template <class T>
+		void doneCB(const actionlib::SimpleClientGoalState &state, const T &result);
+		*/
 };
+
+/*
+template <class T>
+void ActionClientModeWrapper::doneCB(const actionlib::SimpleClientGoalState &state, const T &result)
+{
+	state_ = state.state_;
+
+	if (state != actionlib::SimpleClientGoalState::SUCCEEDED)
+	{
+		found_tags_.clear();
+		return;
+	}
+
+	found_tags_ = result->found_tags;
+	expected_tags_.clear();
+}
+*/
 
 #endif

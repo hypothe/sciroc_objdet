@@ -5,9 +5,9 @@
 void ObjDetMode::setModeNone()      { mode_ = Mode::NONE;       }
 void ObjDetMode::setModeEnumerate() { mode_ = Mode::ENUMERATE;  }
 void ObjDetMode::setModeClassify()  { mode_ = Mode::CLASSIFY;   }
-void setModeCompare()               { mode_ = Mode::COMPARE;    }
+void ObjDetMode::setModeCompare()               { mode_ = Mode::COMPARE;    }
 
-bool isModeNone() 					{ return mode_ == Mode::NONE; 			}
-bool isModeEnumerate()			{ return mode_ == Mode::ENUMERATE; 	}
-bool isModeClassify()				{ return mode_ == Mode::CLASSIFY; 	}
-bool isModeCompare()				{ return mode_ == Mode::COMPARE; 		}
+bool ObjDetMode::isModeNone() 					{ return mode_ == Mode::NONE; 			}
+bool ObjDetMode::isModeEnumerate()			{ return mode_ == Mode::ENUMERATE; 	}
+bool ObjDetMode::isModeClassify()				{ return mode_ == Mode::CLASSIFY; 	}
+bool ObjDetMode::isModeCompare()				{ return mode_ == Mode::COMPARE; 		}

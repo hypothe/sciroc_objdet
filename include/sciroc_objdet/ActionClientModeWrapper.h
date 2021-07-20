@@ -15,6 +15,7 @@ class ActionClientModeWrapper : public ObjDetMode
 {
   public:
 		ActionClientModeWrapper(); // wait for servers
+		void waitForServer();
 
 		void setExpectedTags(std::vector<std::string>);
 		void sendGoal();
@@ -24,10 +25,11 @@ class ActionClientModeWrapper : public ObjDetMode
 
 	private:
 
-		typedef actionlib::SimpleActionClient<ObjectEnumerationAction> OEA;
-		typedef actionlib::SimpleActionClient<ObjectClassificationAction> OKA;
-		typedef actionlib::SimpleActionClient<ObjectComparisonAction> OCA;
-		typedef boost::variant<OEA, OKA, OCA> OXA;
+		typedef std::nullptr_t NNN;
+		typedef actionlib::SimpleActionClient<sciroc_objdet::ObjectEnumerationAction> OEA;
+		typedef actionlib::SimpleActionClient<sciroc_objdet::ObjectClassificationAction> OKA;
+		typedef actionlib::SimpleActionClient<sciroc_objdet::ObjectComparisonAction> OCA;
+		typedef boost::variant<NNN, OEA, OKA, OCA> OXA;
 
 		OEA enum_ac_;
 		OKA clas_ac_;
@@ -36,6 +38,8 @@ class ActionClientModeWrapper : public ObjDetMode
 		std::vector<std::string> expected_tags_, found_tags_;
 
 		std::map<Mode,std::shared_ptr<OXA> > ac_;
+
+		class wait_visitor;
 };
 
 #endif

@@ -14,9 +14,9 @@ class ObjDetMode
     void setModeCompare();
 
     bool isModeNone();
-    void isModeEnumerate();
-    void isModeClassify();
-    void isModeCompare();
+    bool isModeEnumerate();
+    bool isModeClassify();
+    bool isModeCompare();
 
   protected:
 

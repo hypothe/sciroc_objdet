@@ -3,23 +3,23 @@
 class ActionClientModeWrapper::wait_visitor : public boost::static_visitor<bool>
 {
   public:
-    bool operator()(std::shared_ptr<NNN> c){  return true;  }
-    bool operator()(std::shared_ptr<OEA> c){  return c->waitForServer(wait_time); }
-    bool operator()(std::shared_ptr<OKA> c){  return c->waitForServer(wait_time); }
-    bool operator()(std::shared_ptr<OCA> c){  return c->waitForServer(wait_time); }
-
+    bool operator()(NNNPtr c) const {  return true;  }
+    bool operator()(OEAPtr c) const {  return c->waitForServer(wait_time); }
+    bool operator()(OKAPtr c) const {  return c->waitForServer(wait_time); }
+    bool operator()(OCAPtr c) const {  return c->waitForServer(wait_time); }
+/* TEST
+*/
   private:
     ros::Duration wait_time = ros::Duration(1.0);
 };
 
+/* TEST
 class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<>
 {
 	public:
 		send_goal_visitor(ActionClientModeWrapper &p) : parent(p){}
 
-		void operator()(std::shared_ptr<NNN> c) { return; }
-
-		void operator()(std::shared_ptr<OEA> c)
+		void operator()(OEAPtr c)
 		{
 			sciroc_objdet::ObjectEnumerationGoal goal;
 			auto doneCB = [this](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectEnumerationResultConstPtr &result)
@@ -29,6 +29,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			};
 			c->sendGoal(goal, boost::bind(doneCB, this, std::placeholders::_1, std::placeholders::_2), OEA::SimpleActiveCallback(), OEA::SimpleFeedbackCallback());
 		}
+		void operator()(NNNPtr c) { return; }
 
 		void operator()(std::shared_ptr<OKA> c)
 		{
@@ -56,20 +57,22 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			};
 			c->sendGoal(goal, boost::bind(doneCB, this, std::placeholders::_1, std::placeholders::_2), OCA::SimpleActiveCallback(), OCA::SimpleFeedbackCallback());
 		}
-
 	private:
 		ActionClientModeWrapper& parent;
 };
+*/
 
 ActionClientModeWrapper::ActionClientModeWrapper()
-: enum_ac_("object_enumeration"),
-  clas_ac_("object_classification"),
-  comp_ac_("object_comparison")
+: enum_ac_(std::make_shared<OEA>("object_enumeration")),
+  clas_ac_(std::make_shared<OKA>("object_classification")),
+  comp_ac_(std::make_shared<OCA>("object_comparison"))
 {
-  ac_.insert(std::pair<Mode, std::shared_ptr<OXA> >(Mode::NONE, nullptr));
-  ac_.insert(std::pair<Mode, std::shared_ptr<OXA> >(Mode::ENUMERATE, std::make_shared<OXA>(enum_ac_)));
+	ac_.insert(std::pair<Mode, OXAPtr>(Mode::ENUMERATE, enum_ac_));
+  /*
+  ac_.insert(std::pair<Mode, std::shared_ptr<OXAPtr> >(Mode::NONE, nullptr));
   ac_.insert(std::pair<Mode, std::shared_ptr<OXA> >(Mode::CLASSIFY, std::make_shared<OXA>(clas_ac_)));
   ac_.insert(std::pair<Mode, std::shared_ptr<OXA> >(Mode::COMPARE, std::make_shared<OXA>(comp_ac_)));
+	*/
 }
 
 void ActionClientModeWrapper::waitForServer()
@@ -91,10 +94,11 @@ void ActionClientModeWrapper::sendGoal()
 	found_tags_.clear(); //cleanup
 	match_ = false;
 	n_found_tags = 0;
-
+/* TEST
 	ActionClientModeWrapper::send_goal_visitor sgv = ActionClientModeWrapper::send_goal_visitor(*this);
 
 	boost::apply_visitor(sgv, ac_[mode_]);
+*/
 }
 
 actionlib::SimpleClientGoalState::StateEnum ActionClientModeWrapper::getState() { return state_; }

@@ -7,6 +7,10 @@ class ObjDetMode
 {
   public:
 		ObjDetMode() : mode_(Mode::NONE){}
+    ObjDetMode(int mode) 
+      : mode_((mode <= static_cast<int>(Mode::NONE) && mode >= 0) ? 
+        static_cast <Mode>(mode) :  Mode::NONE)
+      {}
 
     void setModeNone();
     void setModeEnumerate();
@@ -20,15 +24,23 @@ class ObjDetMode
 
     enum class Mode
     {
-      NONE = -1,
       ENUMERATE,
       CLASSIFY,
-      COMPARE
+      COMPARE,
+      NONE
     };
-    
+
   protected:
 
     Mode mode_;
+    /*
+    Mode boundInt(int mode){
+      if (mode > static_cast<int>(Mode::NONE) || mode < 0)
+        return Mode::NONE;
+      return static_cast<Mode>(mode);
+    }*/
 };
+
+std::ostream &operator<<(std::ostream &os, ObjDetMode o);
 
 #endif

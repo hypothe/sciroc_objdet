@@ -64,6 +64,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/ObjDetMode.cpp
   src/ActionClientModeWrapper.cpp
+  src/ObjDetInterfaceAS.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
@@ -77,7 +78,7 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-add_executable(${PROJECT_NAME}_interface src/interface.cpp)
+add_executable(${PROJECT_NAME}_interface src/objdet_interface.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

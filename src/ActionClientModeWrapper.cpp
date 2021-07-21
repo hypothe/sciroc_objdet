@@ -24,7 +24,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			auto doneCB =
 			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectEnumerationResultConstPtr &result)
 			{
-				parent.state_ = state.state_;
+				parent.state_ = state;
 				parent.n_found_tags = result->n_found_tags;
 			};
 			c->sendGoal(goal, doneCB, OEA::SimpleActiveCallback(), OEA::SimpleFeedbackCallback());
@@ -37,8 +37,9 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			auto doneCB =
 			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectClassificationResultConstPtr &result)
 			{
-				parent.state_ = state.state_;
+				parent.state_ = state;
 				parent.found_tags_ = result->found_tags;
+				parent.n_found_tags = sizeof(result->found_tags);
 			};
 			c->sendGoal(goal, doneCB, OKA::SimpleActiveCallback(), OKA::SimpleFeedbackCallback());
 		}
@@ -51,8 +52,10 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			auto doneCB =
 			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectComparisonResultConstPtr &result)
 			{
-				parent.state_ = state.state_;
+				parent.state_ = state;
 				parent.found_tags_ = result->found_tags;
+				parent.n_found_tags = sizeof(result->found_tags);
+
 				std::sort(parent.found_tags_.begin(), parent.found_tags_.end());
 				std::sort(parent.expected_tags_.begin(), parent.expected_tags_.end());
 				parent.match_ = std::includes(parent.found_tags_.begin(), parent.found_tags_.end(),
@@ -64,13 +67,24 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 	private:
 		ActionClientModeWrapper& parent;
 };
+
+class ActionClientModeWrapper::cancel_goal_visitor : public boost::static_visitor<void>
+{
+  public:
+    void operator()(NNNPtr c) const {  return;  }
+    void operator()(OEAPtr c) const {  c->cancelGoal(); }
+    void operator()(OKAPtr c) const {  c->cancelGoal(); }
+    void operator()(OCAPtr c) const {  c->cancelGoal(); }
+};
 /* TEST
 */
 
-ActionClientModeWrapper::ActionClientModeWrapper()
-: enum_ac_(std::make_shared<OEA>("object_enumeration")),
+ActionClientModeWrapper::ActionClientModeWrapper(int mode)
+: ObjDetMode(mode),
+	enum_ac_(std::make_shared<OEA>("object_enumeration")),
   clas_ac_(std::make_shared<OKA>("object_classification")),
-  comp_ac_(std::make_shared<OCA>("object_comparison"))
+  comp_ac_(std::make_shared<OCA>("object_comparison")),
+	state_(actionlib::SimpleClientGoalState::StateEnum::LOST)
 {
 	ac_.insert(std::pair<Mode, OXAPtr>(Mode::ENUMERATE, enum_ac_));
   ac_.insert(std::pair<Mode, OXAPtr>(Mode::NONE, nullptr));
@@ -80,7 +94,26 @@ ActionClientModeWrapper::ActionClientModeWrapper()
 	*/
 }
 
+// If no mode is expressed insert -1, which will be converted to a Mode::NONE
+// by the ObjDetModed constructor
+ActionClientModeWrapper::ActionClientModeWrapper()
+: ActionClientModeWrapper::ActionClientModeWrapper(-1){}
+
+/*	Wait only for the currently tracked action server	*/
 void ActionClientModeWrapper::waitForServer()
+{
+	bool server_up = false;
+	std::stringstream ss;
+	ss << static_cast<ObjDetMode>(*this);
+	while (!server_up)
+	{
+		boost::apply_visitor(ActionClientModeWrapper::wait_visitor(), ac_[mode_]);
+		ROS_WARN("Waiting for objdet %s action server.", ss.str().c_str());
+	}
+
+}
+/*	Wait for all the action servers tracked to be up	*/
+void ActionClientModeWrapper::waitForAllServers()
 {
   bool servers_up = false;
 
@@ -91,7 +124,8 @@ void ActionClientModeWrapper::waitForServer()
     {
       servers_up = servers_up && boost::apply_visitor(ActionClientModeWrapper::wait_visitor(), mode_ac.second);
     }
-  }
+		ROS_WARN("Waiting for all objdet action servers.");
+	}
 }
 
 void ActionClientModeWrapper::sendGoal()
@@ -103,9 +137,43 @@ void ActionClientModeWrapper::sendGoal()
 	ActionClientModeWrapper::send_goal_visitor sgv = ActionClientModeWrapper::send_goal_visitor(*this);
 
 	boost::apply_visitor(sgv, ac_[mode_]);
+}
+void ActionClientModeWrapper::cancelGoal()
+{
+	found_tags_.clear(); //cleanup
+	match_ = false;
+	n_found_tags = 0;
+	/*	TODO: should we also clear the expected tags?*/
+
+	ActionClientModeWrapper::cancel_goal_visitor cgv = ActionClientModeWrapper::cancel_goal_visitor();
+
+	boost::apply_visitor(cgv, ac_[mode_]);
 
 }
 
-actionlib::SimpleClientGoalState::StateEnum ActionClientModeWrapper::getState() { return state_; }
+actionlib::SimpleClientGoalState ActionClientModeWrapper::getState() { return state_; }
 bool ActionClientModeWrapper::getMatch() 	{ return match_; }
 int ActionClientModeWrapper::getNumTags() { return n_found_tags; }
+std::vector<std::string> ActionClientModeWrapper::getExpectedTags() { return expected_tags_; }
+std::vector<std::string> ActionClientModeWrapper::getFoundTags() 		{ return found_tags_; }
+
+std::ostream& operator<<(std::ostream& os, ActionClientModeWrapper o)
+{
+	os << "Mode: " << static_cast<ObjDetMode>(o) << std::endl;
+
+	os << "State: " << o.getState().toString() << std::endl;
+
+	os << "Expected tags: ";
+	for (auto tag : o.getExpectedTags())
+		os << tag << ", ";
+	os << std::endl;
+
+	os << "Found tags: ";
+	for (auto tag : o.getFoundTags())
+		os << tag << ", ";
+	os << std::endl;
+
+	os << "Match: " << o.getMatch() << std::endl;
+
+	return os;
+}

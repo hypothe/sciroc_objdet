@@ -11,18 +11,24 @@
 
 #include <boost/variant.hpp>
 
+/*	TODO: is it worth making this class a child of SimpleActionClient?	*/
+
 class ActionClientModeWrapper : public ObjDetMode
 {
   public:
 		ActionClientModeWrapper();
+		ActionClientModeWrapper(int mode);
 		
 		void waitForServer();
+		void waitForAllServers();
 
 		void setExpectedTags(std::vector<std::string>);
 		void sendGoal();
-		actionlib::SimpleClientGoalState::StateEnum getState();
+		void cancelGoal();
+		actionlib::SimpleClientGoalState getState();
 
 		int getNumTags();
+		std::vector<std::string> getExpectedTags();
 		std::vector<std::string> getFoundTags();
 		bool getMatch();
 
@@ -48,12 +54,14 @@ class ActionClientModeWrapper : public ObjDetMode
 
 		std::map<Mode,OXAPtr> ac_;
 
-		actionlib::SimpleClientGoalState::StateEnum state_;
+		actionlib::SimpleClientGoalState state_;
 
 		class wait_visitor;
 		class send_goal_visitor;
+		class cancel_goal_visitor;
 
 };
 
+std::ostream &operator<<(std::ostream &os, ActionClientModeWrapper o);
 
 #endif

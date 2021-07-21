@@ -9,3 +9,14 @@ bool ObjDetMode::isModeNone() 					{ return mode_ == Mode::NONE; 			}
 bool ObjDetMode::isModeEnumerate()			{ return mode_ == Mode::ENUMERATE; 	}
 bool ObjDetMode::isModeClassify()				{ return mode_ == Mode::CLASSIFY; 	}
 bool ObjDetMode::isModeCompare()				{ return mode_ == Mode::COMPARE; 		}
+
+std::ostream& operator<<(std::ostream& os, ObjDetMode o)
+{
+	if (o.isModeEnumerate())	os << "ENUMERATE";
+	if (o.isModeClassify())		os << "CLASSIFY";
+	if (o.isModeCompare())		os << "COMPARE";
+	if (o.isModeNone())				os << "NONE";
+	else
+			os.setstate(std::ios_base::failbit);
+	return os;
+}

@@ -16,7 +16,13 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 {
 	public:
 		send_goal_visitor(ActionClientModeWrapper &p) : parent(p){}
-		void operator()(NNNPtr c) const { return; }
+		void operator()(NNNPtr c) const 
+		{
+			parent.state_ = actionlib::SimpleClientGoalState::SUCCEEDED;
+			parent.n_found_tags_ = 0;
+			parent.found_tags_.clear();
+			parent.expected_tags_.clear();
+		}
 
 		void operator()(OEAPtr c) const
 		{
@@ -25,7 +31,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectEnumerationResultConstPtr &result)
 			{
 				parent.state_ = state;
-				parent.n_found_tags = result->n_found_tags;
+				parent.n_found_tags_ = result->n_found_tags;
 			};
 			c->sendGoal(goal, doneCB, OEA::SimpleActiveCallback(), OEA::SimpleFeedbackCallback());
 		}
@@ -39,7 +45,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			{
 				parent.state_ = state;
 				parent.found_tags_ = result->found_tags;
-				parent.n_found_tags = sizeof(result->found_tags);
+				parent.n_found_tags_ = sizeof(result->found_tags);
 			};
 			c->sendGoal(goal, doneCB, OKA::SimpleActiveCallback(), OKA::SimpleFeedbackCallback());
 		}
@@ -54,7 +60,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 			{
 				parent.state_ = state;
 				parent.found_tags_ = result->found_tags;
-				parent.n_found_tags = sizeof(result->found_tags);
+				parent.n_found_tags_ = sizeof(result->found_tags);
 
 				std::sort(parent.found_tags_.begin(), parent.found_tags_.end());
 				std::sort(parent.expected_tags_.begin(), parent.expected_tags_.end());
@@ -84,7 +90,8 @@ ActionClientModeWrapper::ActionClientModeWrapper(int mode)
 	enum_ac_(std::make_shared<OEA>("object_enumeration")),
   clas_ac_(std::make_shared<OKA>("object_classification")),
   comp_ac_(std::make_shared<OCA>("object_comparison")),
-	state_(actionlib::SimpleClientGoalState::StateEnum::LOST)
+	state_(actionlib::SimpleClientGoalState::StateEnum::LOST),
+	match_(false), n_found_tags_(0)
 {
 	ac_.insert(std::pair<Mode, OXAPtr>(Mode::ENUMERATE, enum_ac_));
   ac_.insert(std::pair<Mode, OXAPtr>(Mode::NONE, nullptr));
@@ -107,7 +114,7 @@ void ActionClientModeWrapper::waitForServer()
 	ss << static_cast<ObjDetMode>(*this);
 	while (!server_up)
 	{
-		boost::apply_visitor(ActionClientModeWrapper::wait_visitor(), ac_[mode_]);
+		server_up = boost::apply_visitor(ActionClientModeWrapper::wait_visitor(), ac_[mode_]);
 		ROS_WARN("Waiting for objdet %s action server.", ss.str().c_str());
 	}
 
@@ -132,7 +139,7 @@ void ActionClientModeWrapper::sendGoal()
 {
 	found_tags_.clear(); //cleanup
 	match_ = false;
-	n_found_tags = 0;
+	n_found_tags_ = 0;
 
 	ActionClientModeWrapper::send_goal_visitor sgv = ActionClientModeWrapper::send_goal_visitor(*this);
 
@@ -142,7 +149,7 @@ void ActionClientModeWrapper::cancelGoal()
 {
 	found_tags_.clear(); //cleanup
 	match_ = false;
-	n_found_tags = 0;
+	n_found_tags_ = 0;
 	/*	TODO: should we also clear the expected tags?*/
 
 	ActionClientModeWrapper::cancel_goal_visitor cgv = ActionClientModeWrapper::cancel_goal_visitor();
@@ -153,9 +160,14 @@ void ActionClientModeWrapper::cancelGoal()
 
 actionlib::SimpleClientGoalState ActionClientModeWrapper::getState() { return state_; }
 bool ActionClientModeWrapper::getMatch() 	{ return match_; }
-int ActionClientModeWrapper::getNumTags() { return n_found_tags; }
+int ActionClientModeWrapper::getNumTags() { return n_found_tags_; }
 std::vector<std::string> ActionClientModeWrapper::getExpectedTags() { return expected_tags_; }
 std::vector<std::string> ActionClientModeWrapper::getFoundTags() 		{ return found_tags_; }
+
+void ActionClientModeWrapper::setExpectedTags(std::vector<std::string> expected_tags)
+{
+	expected_tags_ = expected_tags;
+}
 
 std::ostream& operator<<(std::ostream& os, ActionClientModeWrapper o)
 {
@@ -172,8 +184,8 @@ std::ostream& operator<<(std::ostream& os, ActionClientModeWrapper o)
 	for (auto tag : o.getFoundTags())
 		os << tag << ", ";
 	os << std::endl;
-
-	os << "Match: " << o.getMatch() << std::endl;
+	
+	os << "Match: " << std::boolalpha << o.getMatch() << std::endl;
 
 	return os;
 }

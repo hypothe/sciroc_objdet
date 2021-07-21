@@ -50,7 +50,7 @@ class ActionClientModeWrapper : public ObjDetMode
 
 		std::vector<std::string> expected_tags_, found_tags_;
 		bool match_;
-		int n_found_tags;
+		int n_found_tags_;
 
 		std::map<Mode,OXAPtr> ac_;
 

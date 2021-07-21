@@ -9,9 +9,6 @@ ObjDetInterfaceAS::ObjDetInterfaceAS(std::string name) :
   as_.registerGoalCallback(boost::bind(&ObjDetInterfaceAS::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&ObjDetInterfaceAS::preemptCB, this));
   as_.start();
-
-  /*	TODO	*/
-  srand(time(NULL));
 }
 /*
   ~ObjDetInterfaceAS(void)
@@ -32,46 +29,37 @@ void ObjDetInterfaceAS::goalCB()
   int mode = goal->mode;
   std::cout << mode << std::endl;
   std::vector<std::string> exp_tags = goal->expected_tags;
-
-  info << "\t<" << mode << ">\n";
-  for (auto tag:exp_tags){  info << "\t- " << tag << "\n";  }
-
-  ROS_DEBUG("%s: New goal received\n%s", action_name_.c_str(), info.str().c_str());
   
   feedback_.step = "RECEIVED";
   as_.publishFeedback(feedback_);
 
   /*  Here select which of the "inner" action server to call and prepare the message  */
 
-  /*  TODO
-    Change the switch case to an if cascade, where the mode is checked with ActionClientModeWrapper::Mode::ENUMERATE etc.
-    and then the ACMW mode is set accordingly (with the foos inherited by ObjDetMode)
-
-    After that call the waitForServer on that ACMW.
-  */
  // Generic Action Client handling the three possible modes autonomously
   action_client_ = std::make_shared<ActionClientModeWrapper>(mode);
   std::stringstream s_mode;
 
   action_client_->waitForServer();
 
-  s_mode << action_client_.get();
+  s_mode << *action_client_;
   ROS_INFO("%s: %s", action_name_.c_str(), s_mode.str().c_str());
+  /*  Prepare the client and send the goal  */
+  action_client_->setExpectedTags(goal->expected_tags);
+  action_client_->sendGoal();
 
   feedback_.step = "ACCEPTED";
   as_.publishFeedback(feedback_);
 
   ODI_clock.start();
-  /*  Here call such action server  */
-
 }
 
 void ObjDetInterfaceAS::preemptCB()
 {
   ODI_clock.stop();
   /*  WARN: The clock is stopped right now, the callback is
-      stopped being served, hence the status is no more tracked
-      as soon as a preempt request is received.
+      stopped being served, hence the status is not tracked anymore
+      as soon as a preempt request is received (not a problem when we
+      have only a goal served at any given time)
    */
   ROS_DEBUG("%s: Preemption request received", action_name_.c_str());
   
@@ -79,7 +67,7 @@ void ObjDetInterfaceAS::preemptCB()
       then preempt this one too
   */
   action_client_->cancelGoal();
-  while (action_client_->getState().isDone())
+  while (!(action_client_->getState().isDone()))
   {
     ros::Duration(0.1).sleep();
   }
@@ -91,10 +79,15 @@ void ObjDetInterfaceAS::clock_Cllbck(const ros::TimerEvent&)
   /*  Check if the action server called has returned the result:
       if so, fill the result appropriately and return it
   */
-
-  if (!as_.isActive()){	return;	}
-
-  if (!action_client_->getState().isDone())
+  if (!as_.isActive())
+  {
+    return;
+  }
+  /*  TODO: possibly retrieve feedback from the
+      inner action servers and publish it instead
+      of a "meaningless" ONGOING
+  */
+  if (!(action_client_->getState().isDone()))
   {
     feedback_.step = "ONGOING";
     as_.publishFeedback(feedback_);
@@ -126,5 +119,9 @@ void ObjDetInterfaceAS::clock_Cllbck(const ros::TimerEvent&)
       break;
     }
   }
-}
+  feedback_.step = action_client_->getState().toString();
+  as_.publishFeedback(feedback_);
+  
+  ODI_clock.stop();
 
+}

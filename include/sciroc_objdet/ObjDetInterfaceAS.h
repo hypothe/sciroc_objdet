@@ -5,8 +5,6 @@
 
 #include <sstream>
 #include <memory>
-#include <stdlib.h>
-#include <time.h>
 
 /*
   This class will have a timer, started whan a goal is received, and which will

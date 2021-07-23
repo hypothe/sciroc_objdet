@@ -91,8 +91,13 @@ void ObjDetInterfaceAS::clock_Cllbck(const ros::TimerEvent&)
   {
     feedback_.step = "ONGOING";
     as_.publishFeedback(feedback_);
+    ROS_INFO("ac: %s", action_client_->getState().toString().c_str());
     return;
   }
+
+  std::stringstream s_mode;
+  s_mode << static_cast<ActionClientModeWrapper>(*action_client_);
+  ROS_DEBUG("Action Client %s done", s_mode.str().c_str());
 
   switch(action_client_->getState().state_)
   {

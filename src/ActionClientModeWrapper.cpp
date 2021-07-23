@@ -26,6 +26,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 
 		void operator()(OEAPtr c) const
 		{
+			parent.state_ = actionlib::SimpleClientGoalState::ACTIVE;
 			sciroc_objdet::ObjectEnumerationGoal goal;
 			auto doneCB =
 			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectEnumerationResultConstPtr &result)
@@ -39,6 +40,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 		void operator()(OKAPtr c) const
 		{
 			sciroc_objdet::ObjectClassificationGoal goal;
+			parent.state_ = actionlib::SimpleClientGoalState::ACTIVE;
 			
 			auto doneCB =
 			[&](const actionlib::SimpleClientGoalState &state, const sciroc_objdet::ObjectClassificationResultConstPtr &result)
@@ -53,6 +55,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 		void operator()(OCAPtr c) const
 		{
 			sciroc_objdet::ObjectComparisonGoal goal;
+			parent.state_ = actionlib::SimpleClientGoalState::ACTIVE;
 			goal.expected_tags = parent.expected_tags_;
 
 			auto doneCB =
@@ -77,10 +80,23 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 class ActionClientModeWrapper::cancel_goal_visitor : public boost::static_visitor<void>
 {
   public:
-    void operator()(NNNPtr c) const {  return;  }
-    void operator()(OEAPtr c) const {  c->cancelGoal(); }
-    void operator()(OKAPtr c) const {  c->cancelGoal(); }
-    void operator()(OCAPtr c) const {  c->cancelGoal(); }
+		cancel_goal_visitor(ActionClientModeWrapper &p) : parent(p){}
+    void operator()(NNNPtr c) const { parent.state_ = actionlib::SimpleClientGoalState::PREEMPTED;  }
+    void operator()(OEAPtr c) const {	c->cancelGoal();	}
+    void operator()(OKAPtr c) const {	c->cancelGoal();	}
+    void operator()(OCAPtr c) const {	c->cancelGoal();	}
+		
+	private:
+		ActionClientModeWrapper& parent;
+};
+
+class ActionClientModeWrapper::get_state_visitor : public boost::static_visitor<actionlib::SimpleClientGoalState>
+{
+  public:
+  	actionlib::SimpleClientGoalState operator()(NNNPtr c) const {  return actionlib::SimpleClientGoalState::SUCCEEDED;  }
+  	actionlib::SimpleClientGoalState operator()(OEAPtr c) const {  return c->getState(); }
+  	actionlib::SimpleClientGoalState operator()(OKAPtr c) const {  return c->getState(); }
+  	actionlib::SimpleClientGoalState operator()(OCAPtr c) const {  return c->getState(); }
 };
 /* TEST
 */
@@ -152,13 +168,17 @@ void ActionClientModeWrapper::cancelGoal()
 	n_found_tags_ = 0;
 	/*	TODO: should we also clear the expected tags?*/
 
-	ActionClientModeWrapper::cancel_goal_visitor cgv = ActionClientModeWrapper::cancel_goal_visitor();
+	ActionClientModeWrapper::cancel_goal_visitor cgv = ActionClientModeWrapper::cancel_goal_visitor(*this);
 
 	boost::apply_visitor(cgv, ac_[mode_]);
 
 }
 
-actionlib::SimpleClientGoalState ActionClientModeWrapper::getState() { return state_; }
+actionlib::SimpleClientGoalState ActionClientModeWrapper::getState()
+{
+	state_ = boost::apply_visitor(ActionClientModeWrapper::get_state_visitor(), ac_[mode_]);
+	return state_;
+}
 bool ActionClientModeWrapper::getMatch() 	{ return match_; }
 int ActionClientModeWrapper::getNumTags() { return n_found_tags_; }
 std::vector<std::string> ActionClientModeWrapper::getExpectedTags() { return expected_tags_; }
@@ -171,7 +191,10 @@ void ActionClientModeWrapper::setExpectedTags(std::vector<std::string> expected_
 
 std::ostream& operator<<(std::ostream& os, ActionClientModeWrapper o)
 {
-	os << "Mode: " << static_cast<ObjDetMode>(o) << std::endl;
+	std::stringstream ss;
+	ss << static_cast<ObjDetMode>(o);
+	
+	os << "Mode: " << ss.str() << std::endl;
 
 	os << "State: " << o.getState().toString() << std::endl;
 

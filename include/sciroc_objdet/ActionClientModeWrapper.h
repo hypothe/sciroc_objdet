@@ -59,6 +59,7 @@ class ActionClientModeWrapper : public ObjDetMode
 		class wait_visitor;
 		class send_goal_visitor;
 		class cancel_goal_visitor;
+		class get_state_visitor;
 
 };
 

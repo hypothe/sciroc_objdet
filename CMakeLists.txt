@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   actionlib
   actionlib_msgs
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -20,8 +21,12 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate actions in the 'action' folder
 add_action_files(
-   DIRECTORY action
-   # FILES ObjDetInterface.action
+  DIRECTORY action
+  FILES 
+  ObjDetInterface.action
+  ObjectClassification.action
+  ObjectComparison.action
+  ObjectEnumeration.action 
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -45,7 +50,7 @@ add_action_files(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy
+  CATKIN_DEPENDS roscpp rospy message_runtime std_msgs
   DEPENDS actionlib_msgs actionlib
 )
 
@@ -91,8 +96,10 @@ set_target_properties(${PROJECT_NAME}_enumeration PROPERTIES OUTPUT_NAME objdet_
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 
-add_dependencies(${PROJECT_NAME}_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_enumeration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_interface ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_interface ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_enumeration ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_enumeration ${catkin_EXPORTED_TARGETS})
  
 ## Specify libraries to link a library or executable target against
 

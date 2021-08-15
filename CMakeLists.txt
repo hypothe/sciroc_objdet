@@ -51,7 +51,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS roscpp rospy message_runtime std_msgs actionlib_msgs
-  DEPENDS actionlib_msgs actionlib
 )
 
 ###########

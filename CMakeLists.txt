@@ -49,9 +49,8 @@ add_action_files(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy message_runtime std_msgs actionlib_msgs actionlib
-  #DEPENDS actionlib_msgs actionlib
+  LIBRARIES ${PROJECT_NAME}_lib
+  CATKIN_DEPENDS roscpp rospy message_runtime std_msgs actionlib_msgs
 )
 
 ###########
@@ -66,13 +65,13 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME}_lib
   src/ObjDetMode.cpp
   src/ActionClientModeWrapper.cpp
   src/ObjDetInterfaceAS.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -97,8 +96,8 @@ add_executable(${PROJECT_NAME}_enumeration src/enumeration.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 
-add_dependencies(${PROJECT_NAME}_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_enumeration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_enumeration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 
@@ -107,13 +106,17 @@ target_link_libraries(${PROJECT_NAME}_interface
   ${catkin_LIBRARIES}
 )
 target_link_libraries(${PROJECT_NAME}_interface
-  ${PROJECT_NAME}
+  ${PROJECT_NAME}_lib
 )
 target_link_libraries(${PROJECT_NAME}_enumeration
   ${catkin_LIBRARIES}
 )
 target_link_libraries(${PROJECT_NAME}_enumeration
-  ${PROJECT_NAME}
+  ${PROJECT_NAME}_lib
+)
+
+add_dependencies(${PROJECT_NAME}_lib
+  ${PROJECT_NAME}_generate_messages_cpp
 )
 
 #############
@@ -138,10 +141,17 @@ target_link_libraries(${PROJECT_NAME}_enumeration
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME}_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+install(TARGETS ${PROJECT_NAME}_interface
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS ${PROJECT_NAME}_enumeration
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 ## Mark cpp header files for installation

@@ -50,8 +50,8 @@ add_action_files(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy message_runtime std_msgs actionlib_msgs
-  DEPENDS actionlib_msgs actionlib
+  CATKIN_DEPENDS roscpp rospy message_runtime std_msgs actionlib_msgs actionlib
+  #DEPENDS actionlib_msgs actionlib
 )
 
 ###########
@@ -90,17 +90,16 @@ add_executable(${PROJECT_NAME}_enumeration src/enumeration.cpp)
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-set_target_properties(${PROJECT_NAME}_interface PROPERTIES OUTPUT_NAME objdet_interface PREFIX "")
-set_target_properties(${PROJECT_NAME}_enumeration PROPERTIES OUTPUT_NAME objdet_enumeration PREFIX "")
+
+#set_target_properties(${PROJECT_NAME}_interface PROPERTIES OUTPUT_NAME objdet_interface PREFIX "")
+#set_target_properties(${PROJECT_NAME}_enumeration PROPERTIES OUTPUT_NAME objdet_enumeration PREFIX "")
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 
-add_dependencies(${PROJECT_NAME}_interface ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_enumeration ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_enumeration ${catkin_EXPORTED_TARGETS})
- 
+add_dependencies(${PROJECT_NAME}_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_enumeration ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 ## Specify libraries to link a library or executable target against
 
  

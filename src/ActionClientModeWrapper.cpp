@@ -103,6 +103,7 @@ class ActionClientModeWrapper::get_state_visitor : public boost::static_visitor<
 
 ActionClientModeWrapper::ActionClientModeWrapper(int mode)
 : ObjDetMode(mode),
+// TODO: get action names from rosparam
 	enum_ac_(std::make_shared<OEA>("object_enumeration")),
   clas_ac_(std::make_shared<OKA>("object_classification")),
   comp_ac_(std::make_shared<OCA>("object_comparison")),

@@ -2,6 +2,6 @@
 <launch>
 	<!--env name="ROSCONSOLE_CONFIG_FILE" value="$(find sciroc_objdet)/config/console.config"/-->
 
-  <node name="objdet_interface" pkg="sciroc_objdet" type="sciroc_objdet_interface" output="screen"/>
+  <node name="objdet_interface" pkg="sciroc_objdet" type="sciroc_objdet_interface" output="screen" args="--wait"/>
   <!-- TODO add param loading-->
 </launch>

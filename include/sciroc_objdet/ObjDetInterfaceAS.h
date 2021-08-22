@@ -24,7 +24,7 @@
 class ObjDetInterfaceAS
 {
 public:
-	ObjDetInterfaceAS(std::string name);
+	ObjDetInterfaceAS(ros::NodeHandle nodeHandle, std::string name);
 /*
   ~ObjDetInterfaceAS(void)
 */
@@ -41,6 +41,6 @@ protected:
   sciroc_objdet::ObjDetInterfaceResult result_;
 
   ros::Timer ODI_clock;
-	const double ODI_clock_cycle = 0.02;
+	const double ODI_clock_cycle = 0.5;
 	std::shared_ptr<ActionClientModeWrapper> action_client_;
 };

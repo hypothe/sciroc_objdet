@@ -1,11 +1,13 @@
 #include "sciroc_objdet/ObjDetInterfaceAS.h"
 
-ObjDetInterfaceAS::ObjDetInterfaceAS(std::string name) :
+ObjDetInterfaceAS::ObjDetInterfaceAS(ros::NodeHandle nodeHandle, std::string name) :
+  nh_(nodeHandle),
   as_(nh_, name, false),
-  action_name_(name)
+  action_name_(name),
+  action_client_(std::make_shared<ActionClientModeWrapper>())
 {
   ODI_clock = nh_.createTimer(ros::Duration(ODI_clock_cycle), &ObjDetInterfaceAS::clock_Cllbck, this, false, false);
-
+  action_client_->waitForAllServers();
   as_.registerGoalCallback(boost::bind(&ObjDetInterfaceAS::goalCB, this));
   as_.registerPreemptCallback(boost::bind(&ObjDetInterfaceAS::preemptCB, this));
   as_.start();
@@ -29,20 +31,18 @@ void ObjDetInterfaceAS::goalCB()
   int mode = goal->mode;
   std::cout << mode << std::endl;
   std::vector<std::string> exp_tags = goal->expected_tags;
-  
+  /*  Here select which of the "inner" action server to call and prepare the message  */
+  action_client_->setMode(mode);
+
   feedback_.step = "RECEIVED";
   as_.publishFeedback(feedback_);
 
-  /*  Here select which of the "inner" action server to call and prepare the message  */
 
  // Generic Action Client handling the three possible modes autonomously
-  action_client_ = std::make_shared<ActionClientModeWrapper>(mode);
-  std::stringstream s_mode;
 
-  action_client_->waitForServer();
+  // action_client_->waitForServer();
 
-  s_mode << *action_client_;
-  ROS_INFO("%s: %s", action_name_.c_str(), s_mode.str().c_str());
+  ROS_INFO("%s: %s", action_name_.c_str(), action_client_->getText().c_str());
   /*  Prepare the client and send the goal  */
   action_client_->setExpectedTags(goal->expected_tags);
   action_client_->sendGoal();
@@ -87,18 +87,20 @@ void ObjDetInterfaceAS::clock_Cllbck(const ros::TimerEvent&)
       inner action servers and publish it instead
       of a "meaningless" ONGOING
   */
+  ROS_DEBUG("[ObjDetAS]: clock, about to get state");
   if (!(action_client_->getState().isDone()))
   {
     feedback_.step = "ONGOING";
     as_.publishFeedback(feedback_);
-    ROS_INFO("ac: %s", action_client_->getState().toString().c_str());
+    // ROS_INFO("ac: %s", action_client_->getState().toString().c_str());
     return;
   }
-
+  ROS_DEBUG("Action client is done");
+  /*
   std::stringstream s_mode;
   s_mode << static_cast<ActionClientModeWrapper>(*action_client_);
   ROS_DEBUG("Action Client %s done", s_mode.str().c_str());
-
+*/
   switch(action_client_->getState().state_)
   {
     case actionlib::SimpleClientGoalState::PREEMPTED :

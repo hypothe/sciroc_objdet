@@ -4,7 +4,8 @@
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "objdet_interface");
-  ObjDetInterfaceAS objdet_interface(ros::this_node::getName());
+  ros::NodeHandle nodeHandle;
+  ObjDetInterfaceAS objdet_interface(nodeHandle, ros::this_node::getName());
   ros::spin();
 
   return 0;

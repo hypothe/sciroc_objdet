@@ -8,32 +8,35 @@ class ObjDetMode
   public:
 		ObjDetMode() : mode_(Mode::NONE){}
     ObjDetMode(int mode) 
-      : mode_((mode <= static_cast<int>(Mode::NONE) && mode >= 0) ? 
-        static_cast <Mode>(mode) :  Mode::NONE)
-      {}
+      //: mode_((mode <= static_cast<int>(Mode::NONE) && mode >= 0) ? 
+      //  static_cast <Mode>(mode) :  Mode::NONE)
+      {
+        setMode(mode);
+      }
 
-    void setModeNone();
-    void setModeEnumerate();
-    void setModeClassify();
-    void setModeCompare();
+      void setMode(int mode);
+      void setModeNone();
+      void setModeEnumerate();
+      void setModeClassify();
+      void setModeCompare();
 
-    bool isModeNone();
-    bool isModeEnumerate();
-    bool isModeClassify();
-    bool isModeCompare();
+      bool isModeNone();
+      bool isModeEnumerate();
+      bool isModeClassify();
+      bool isModeCompare();
+      int getModeInt(); // the direct usage is discouraged
 
-    enum class Mode
-    {
-      ENUMERATE,
-      CLASSIFY,
-      COMPARE,
-      NONE
-    };
+      enum class Mode
+      {
+        ENUMERATE,
+        CLASSIFY,
+        COMPARE,
+        NONE
+      };
 
-  protected:
-
-    Mode mode_;
-    /*
+    protected:
+      Mode mode_;
+      /*
     Mode boundInt(int mode){
       if (mode > static_cast<int>(Mode::NONE) || mode < 0)
         return Mode::NONE;

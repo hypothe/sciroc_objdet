@@ -2,6 +2,11 @@
 <launch>
 	<!--env name="ROSCONSOLE_CONFIG_FILE" value="$(find sciroc_objdet)/config/console.config"/-->
 
-  <node name="objdet_interface" pkg="sciroc_objdet" type="sciroc_objdet_interface" output="screen" args="--wait"/>
-  <!-- TODO add param loading-->
+  <arg name="output" default="screen"/>
+	<arg name="required" default="true"/>
+	<arg name="respawn" default="false"/>
+	<arg name="node_args" default=""/>
+
+  <node name="objdet_interface" pkg="sciroc_objdet" type="sciroc_objdet_interface" output="$(arg output)"
+  args="$(arg node_args)"  required="$(arg required)" respawn="$(arg respawn)"/>
 </launch>

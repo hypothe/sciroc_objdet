@@ -3,8 +3,19 @@
 <launch>
 
   <!-- Launch all "inner" launch files -->
-  <include file="$(find darknet_ros)/launch/darknet_ros_as.launch"/>
-  <include file="$(find sciroc_darknet_bridge)/launch/sciroc_darknet_bridge.launch"/>
-  <include file="$(find sciroc_objdet)/launch/sciroc_objdet.launch"/>
+  <!-- Bridge, must be first as it loads necessary common parameters -->
+  <include file="$(find sciroc_darknet_bridge)/launch/sciroc_darknet_bridge.launch">
+    <arg name="output" value="log"/>
+  </include>
+  <!-- Darknet ROS, implements the yolov3 action server -->
+  <include file="$(find darknet_ros)/launch/darknet_ros_as.launch">
+    <arg name="output" value="log"/>
+    <arg name="node_args" value="--wait"/>
+  </include>
+  <!-- Interface, what's seen from the outside -->
+  <include file="$(find sciroc_objdet)/launch/sciroc_objdet.launch">
+    <arg name="output" value="log"/>
+    <arg name="node_args" value="--wait"/>
+  </include>
 
 </launch>

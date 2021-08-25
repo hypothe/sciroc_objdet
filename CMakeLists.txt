@@ -83,7 +83,6 @@ target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES})
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_executable(${PROJECT_NAME}_interface src/objdet_interface.cpp)
-add_executable(${PROJECT_NAME}_enumeration src/enumeration.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -106,12 +105,6 @@ target_link_libraries(${PROJECT_NAME}_interface
   ${catkin_LIBRARIES}
 )
 target_link_libraries(${PROJECT_NAME}_interface
-  ${PROJECT_NAME}_lib
-)
-target_link_libraries(${PROJECT_NAME}_enumeration
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(${PROJECT_NAME}_enumeration
   ${PROJECT_NAME}_lib
 )
 
@@ -150,9 +143,7 @@ install(TARGETS ${PROJECT_NAME}_lib
 install(TARGETS ${PROJECT_NAME}_interface
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-install(TARGETS ${PROJECT_NAME}_enumeration
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+
 
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/

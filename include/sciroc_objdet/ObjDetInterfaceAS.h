@@ -2,6 +2,7 @@
 #include "actionlib/server/simple_action_server.h"
 #include "sciroc_objdet/ObjDetInterfaceAction.h"
 #include "sciroc_objdet/ActionClientModeWrapper.h"
+#include "geometry_msgs/Point.h"
 
 #include <sstream>
 #include <memory>
@@ -28,11 +29,14 @@ public:
 /*
   ~ObjDetInterfaceAS(void)
 */
+
+
+protected:
+
 	void goalCB();
 	void preemptCB();
 	void clock_Cllbck(const ros::TimerEvent &);
-
-protected:
+  geometry_msgs::Point getTablePos(std::string table_id);
 
   ros::NodeHandle nh_;
   actionlib::SimpleActionServer<sciroc_objdet::ObjDetInterfaceAction> as_;

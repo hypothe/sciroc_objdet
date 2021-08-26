@@ -31,6 +31,10 @@ void ObjDetInterfaceAS::goalCB()
   int mode = goal->mode;
   std::cout << mode << std::endl;
   std::vector<std::string> exp_tags = goal->expected_tags;
+
+  std::string table_id = goal->table_id;
+  getTablePos(table_id);
+
   /*  Here select which of the "inner" action server to call and prepare the message  */
   action_client_->setMode(mode);
 
@@ -131,4 +135,19 @@ void ObjDetInterfaceAS::clock_Cllbck(const ros::TimerEvent&)
   
   ODI_clock.stop();
 
+}
+
+geometry_msgs::Point ObjDetInterfaceAS::getTablePos(std::string table_id)
+{
+  geometry_msgs::Point table_pos;
+  std::vector<std::string> poi_data;
+
+  if (!nh_.getParam(std::string("/mmap/poi/submap_0/" + table_id), poi_data))
+  {
+    ROS_ERROR("[%s]: no data about parameter %s", action_name_.c_str(), table_id.c_str());
+  }
+  table_pos.x = std::stof(poi_data[2]);
+  table_pos.y = std::stof(poi_data[3]);
+
+  return table_pos;
 }

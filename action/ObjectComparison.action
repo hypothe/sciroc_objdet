@@ -1,4 +1,5 @@
 # goal
+geometry_msgs/Point table_pos
 string[] expected_tags
 ---
 # result

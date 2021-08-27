@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
     <name>sciroc_objdet</name>
-    <version>0.0.1</version>
+    <version>0.0.8</version>
     <description>The sciroc_objdet package</description>
 
     <maintainer email="5083365@studenti.unige.it">Marco Gabriele Fedozzi</maintainer>

@@ -32,11 +32,9 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 				parent.state_ = actionlib::SimpleClientGoalState::ACTIVE;
 			}
 			sciroc_objdet::ObjectEnumerationGoal goal;
-			c->sendGoal(goal, boost::bind(static_cast<void (ActionClientModeWrapper::*)
-														(const actionlib::SimpleClientGoalState& ,
-														const sciroc_objdet::ObjectEnumerationResultConstPtr& )>(&ActionClientModeWrapper::doneCB),
-													&parent, _1, _2),
-												OEA::SimpleActiveCallback(), OEA::SimpleFeedbackCallback());
+			goal.table_pos = parent.table_pos_;
+			c->sendGoal(goal, boost::bind(static_cast<void (ActionClientModeWrapper::*)(const actionlib::SimpleClientGoalState &, const sciroc_objdet::ObjectEnumerationResultConstPtr &)>(&ActionClientModeWrapper::doneCB), &parent, _1, _2),
+									OEA::SimpleActiveCallback(), OEA::SimpleFeedbackCallback());
 		}
 
 		void operator()(OKAPtr c) const
@@ -45,8 +43,8 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 				boost::unique_lock<boost::shared_mutex> lockGoalResult(parent.mutexResult_);
 				parent.state_ = actionlib::SimpleClientGoalState::ACTIVE;
 			}
-			
 			sciroc_objdet::ObjectClassificationGoal goal;
+			goal.table_pos = parent.table_pos_;
 			
 			c->sendGoal(goal, boost::bind(static_cast<void (ActionClientModeWrapper::*)
 														(const actionlib::SimpleClientGoalState& ,
@@ -66,6 +64,7 @@ class ActionClientModeWrapper::send_goal_visitor : public boost::static_visitor<
 				boost::shared_lock<boost::shared_mutex> lockGoalResult(parent.mutexResult_);
 				goal.expected_tags = parent.expected_tags_;
 			}
+			goal.table_pos = parent.table_pos_;
 			c->sendGoal(goal, boost::bind(static_cast<void (ActionClientModeWrapper::*)
 														(const actionlib::SimpleClientGoalState& ,
 														const sciroc_objdet::ObjectComparisonResultConstPtr& )>(&ActionClientModeWrapper::doneCB),
@@ -242,6 +241,11 @@ std::vector<std::string> ActionClientModeWrapper::getFoundTags() 		{ return foun
 void ActionClientModeWrapper::setExpectedTags(std::vector<std::string> expected_tags)
 {
 	expected_tags_ = expected_tags;
+}
+
+void ActionClientModeWrapper::setTablePos(geometry_msgs::Point table_pos)
+{
+	table_pos_ = table_pos;
 }
 
 std::string ActionClientModeWrapper::getText()

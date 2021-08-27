@@ -1,4 +1,8 @@
 # goal
+# possible modes:
+## 0 -> Enumeration
+## 1 -> Classification
+## 2 -> Comparison
 uint8 mode
 string[] expected_tags
 string table_id

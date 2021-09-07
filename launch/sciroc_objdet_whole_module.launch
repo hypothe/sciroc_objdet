@@ -5,7 +5,7 @@
   <!-- Launch all "inner" launch files -->
   
   <!-- Darknet ROS, implements the yolov3 action server -->
-  <include file="$(find darknet_ros)/launch/darknet_ros_as.launch">
+  <include file="$(find yolov5_ros)/launch/yolov5_ros.launch">
     <arg name="output" value="log"/>
     <arg name="node_args" value="--wait"/>
   </include>

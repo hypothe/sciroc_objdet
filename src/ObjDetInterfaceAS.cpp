@@ -148,7 +148,7 @@ geometry_msgs::Point ObjDetInterfaceAS::getTablePos(std::string table_id)
     ROS_WARN("[%s]: empty 'table_id' field in goal request", action_name_.c_str());
     return table_pos;
   }
-  std::string param_id = "/mmap/poi/submap_0/" + table_id;
+  std::string param_id = "/mmap/poi/submap_0/" + table_id + "_objdet";
   if (!nh_.hasParam(param_id))
   {
     ROS_ERROR("[%s]: no parameter %s found", action_name_.c_str(), param_id.c_str());
